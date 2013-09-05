@@ -1,9 +1,9 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <linux/input.h>
 #include <err.h>
+#include <fcntl.h>
+#include <linux/input.h>
+#include <stdio.h>
 #include <sysexits.h>
+#include <unistd.h>
 
 int main ()
 {
