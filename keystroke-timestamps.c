@@ -37,7 +37,7 @@ int main (int argc, char **argv)
   while (read(fd, &i, sizeof(i)) == sizeof(i)) {
     if (i.type == 1 && i.value == 1) {
       if (print_usec) {
-        printf("%ld.%ld\n", i.time.tv_sec, i.time.tv_usec);
+        printf("%ld.%06ld\n", i.time.tv_sec, i.time.tv_usec);
       } else {
         printf("%ld\n", i.time.tv_sec);
       }
