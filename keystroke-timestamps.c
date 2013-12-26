@@ -29,34 +29,39 @@ int main (int argc, char **argv)
     if (c != 0) exit(EX_USAGE);
   }
 
-  int fd = open(device, O_RDONLY);
-  if (fd < 0) {
+  int open_fd = open(device, O_RDONLY);
+  if (open_fd < 0) {
     err(EX_NOINPUT, "Could not open keyboard event file");
   }
+  int maxfd = open_fd;
   free(device);
   struct input_event i;
   fd_set all_inputs, ready_inputs;
   FD_ZERO(&all_inputs);
-  FD_SET(fd, &all_inputs);
+  FD_SET(open_fd, &all_inputs);
   while (1) {
     ready_inputs = all_inputs;
-    if (select(fd+1, &ready_inputs, NULL, NULL, NULL) != 1) {
+    if (select(maxfd+1, &ready_inputs, NULL, NULL, NULL) != 1) {
       err(EX_IOERR, "select");
     }
-    int read_return = read(fd, &i, sizeof(i));
-    if (read_return == -1) {
-      err(EX_IOERR, "read");
-    }
-    if (read_return != sizeof(i)) {
-      errx(EX_IOERR, "Unexpected EOF");
-    }
-    if (i.type == 1 && i.value == 1) {
-      if (print_usec) {
-        printf("%ld.%06ld\n", i.time.tv_sec, i.time.tv_usec);
-      } else {
-        printf("%ld\n", i.time.tv_sec);
+    for (int fd=0; fd <= maxfd; fd++) {
+      if (FD_ISSET(fd, &ready_inputs)) {
+        int read_return = read(fd, &i, sizeof(i));
+        if (read_return == -1) {
+          err(EX_IOERR, "read");
+        }
+        if (read_return != sizeof(i)) {
+          errx(EX_IOERR, "Unexpected EOF");
+        }
+        if (i.type == 1 && i.value == 1) {
+          if (print_usec) {
+            printf("%ld.%06ld\n", i.time.tv_sec, i.time.tv_usec);
+          } else {
+            printf("%ld\n", i.time.tv_sec);
+          }
+          fflush(stdout);
+        }
       }
-      fflush(stdout);
     }
   }
   return 0;
