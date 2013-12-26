@@ -13,7 +13,7 @@
 int main (int argc, char **argv)
 {
   int print_usec = 0;
-  char* device = strdup("/dev/input/by-path/platform-i8042-serio-0-event-kbd");
+  char* device = strdup("/dev/input/by-path/*kbd*");
   struct option long_options[] = {
     {"device", required_argument, 0,            'd' },
     {"usec",   no_argument,       &print_usec,  1   },
