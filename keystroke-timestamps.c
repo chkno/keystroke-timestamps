@@ -43,8 +43,12 @@ int main (int argc, char **argv)
     if (select(fd+1, &ready_inputs, NULL, NULL, NULL) != 1) {
       err(EX_IOERR, "select");
     }
-    if (read(fd, &i, sizeof(i)) != sizeof(i)) {
-      break;
+    int read_return = read(fd, &i, sizeof(i));
+    if (read_return == -1) {
+      err(EX_IOERR, "read");
+    }
+    if (read_return != sizeof(i)) {
+      errx(EX_IOERR, "Unexpected EOF");
     }
     if (i.type == 1 && i.value == 1) {
       if (print_usec) {
