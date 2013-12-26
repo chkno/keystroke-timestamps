@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <sys/select.h>
 #include <unistd.h>
 
 int main (int argc, char **argv)
@@ -34,7 +35,17 @@ int main (int argc, char **argv)
   }
   free(device);
   struct input_event i;
-  while (read(fd, &i, sizeof(i)) == sizeof(i)) {
+  fd_set all_inputs, ready_inputs;
+  FD_ZERO(&all_inputs);
+  FD_SET(fd, &all_inputs);
+  while (1) {
+    ready_inputs = all_inputs;
+    if (select(fd+1, &ready_inputs, NULL, NULL, NULL) != 1) {
+      err(EX_IOERR, "select");
+    }
+    if (read(fd, &i, sizeof(i)) != sizeof(i)) {
+      break;
+    }
     if (i.type == 1 && i.value == 1) {
       if (print_usec) {
         printf("%ld.%06ld\n", i.time.tv_sec, i.time.tv_usec);
