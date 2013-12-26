@@ -1,5 +1,6 @@
 #include <err.h>
 #include <fcntl.h>
+#include <glob.h>
 #include <getopt.h>
 #include <linux/input.h>
 #include <stdio.h>
@@ -29,18 +30,33 @@ int main (int argc, char **argv)
     if (c != 0) exit(EX_USAGE);
   }
 
-  int open_fd = open(device, O_RDONLY);
-  if (open_fd < 0) {
-    err(EX_NOINPUT, "Could not open keyboard event file");
-  }
-  int maxfd = open_fd;
-  free(device);
-  struct input_event i;
-  fd_set all_inputs, ready_inputs;
+  fd_set all_inputs;
   FD_ZERO(&all_inputs);
-  FD_SET(open_fd, &all_inputs);
+  int maxfd = 0;
+  glob_t glob_result;
+  int glob_return = glob(device, GLOB_ERR | GLOB_NOSORT, NULL, &glob_result);
+  if (glob_return == GLOB_NOMATCH) {
+    errx(EX_NOINPUT, "Could not find keyboard event file(s): %s", device);
+  }
+  if (glob_return != 0) {
+    err(EX_NOINPUT, "Could not glob keyboard event file(s): %s", device);
+  }
+  free(device);
+  for (unsigned i = 0; i < glob_result.gl_pathc; i++) {
+    int open_fd = open(glob_result.gl_pathv[i], O_RDONLY);
+    if (open_fd < 0) {
+      err(EX_NOINPUT, "Could not open keyboard event file: %s", glob_result.gl_pathv[i]);
+    }
+    if (open_fd > maxfd) {
+      maxfd = open_fd;
+    }
+    FD_SET(open_fd, &all_inputs);
+  }
+  globfree(&glob_result);
+
+  struct input_event i;
   while (1) {
-    ready_inputs = all_inputs;
+    fd_set ready_inputs = all_inputs;
     if (select(maxfd+1, &ready_inputs, NULL, NULL, NULL) != 1) {
       err(EX_IOERR, "select");
     }
