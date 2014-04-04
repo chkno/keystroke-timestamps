@@ -5,7 +5,6 @@
 #include <linux/input.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sysexits.h>
 #include <sys/select.h>
 #include <unistd.h>
@@ -13,7 +12,7 @@
 int main (int argc, char **argv)
 {
   int print_usec = 0;
-  char* device = strdup("/dev/input/by-path/*kbd*");
+  char* device = "/dev/input/by-path/*kbd*";
   struct option long_options[] = {
     {"device", required_argument, 0,            'd' },
     {"usec",   no_argument,       &print_usec,  1   },
@@ -23,8 +22,7 @@ int main (int argc, char **argv)
     int c = getopt_long(argc, argv, "", long_options, NULL);
     if (c == -1) break;
     if (c == 'd') {
-      free(device);
-      device = strdup(optarg);
+      device = optarg;
       continue;
     }
     if (c != 0) exit(EX_USAGE);
@@ -41,7 +39,6 @@ int main (int argc, char **argv)
   if (glob_return != 0) {
     err(EX_NOINPUT, "Could not glob keyboard event file(s): %s", device);
   }
-  free(device);
   for (unsigned i = 0; i < glob_result.gl_pathc; i++) {
     int open_fd = open(glob_result.gl_pathv[i], O_RDONLY);
     if (open_fd < 0) {
