@@ -1,7 +1,7 @@
 #!/bin/bash
 
 threshold=${1:-3600}
-LOGFILE="$HOME/keystroke-timestamps.log"
+LOGFILE="${2:-$HOME/keystroke-timestamps.log}"
 
 awk -vthreshold="$threshold" '
   BEGIN {
