@@ -3,10 +3,7 @@
 threshold=${1:-3600}
 LOGFILE="${2:-$HOME/keystroke-timestamps.log}"
 
-awk -vthreshold="$threshold" '
-  BEGIN {
-    time_fmt = "%F %T"
-  }
+awk -vthreshold="$threshold" -vtime_fmt="%F %T" '
   {
     if (prev && $1 - prev > threshold) {
       print(strftime(time_fmt, prev), "to", strftime(time_fmt, $1), "was", $1 - prev)
