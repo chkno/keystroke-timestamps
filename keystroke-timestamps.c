@@ -34,6 +34,7 @@ int main (int argc, char **argv)
     if (c != 0) exit(EX_USAGE);
   }
 
+  /* Open output file */
   FILE *output_file;
   if (output == NULL) {
     output_file = stdout;
@@ -44,6 +45,7 @@ int main (int argc, char **argv)
     }
   }
 
+  /* Open device inputs */
   fd_set all_inputs;
   FD_ZERO(&all_inputs);
   int maxfd = 0;
@@ -67,6 +69,7 @@ int main (int argc, char **argv)
   }
   globfree(&glob_result);
 
+  /* Report keystroke timestamps */
   struct input_event i;
   while (1) {
     fd_set ready_inputs = all_inputs;
