@@ -40,14 +40,14 @@ int main (int argc, char **argv)
     err(EX_NOINPUT, "Could not glob keyboard event file(s): %s", device);
   }
   for (unsigned i = 0; i < glob_result.gl_pathc; i++) {
-    int open_fd = open(glob_result.gl_pathv[i], O_RDONLY);
-    if (open_fd < 0) {
+    int device_fd = open(glob_result.gl_pathv[i], O_RDONLY);
+    if (device_fd < 0) {
       err(EX_NOINPUT, "Could not open keyboard event file: %s", glob_result.gl_pathv[i]);
     }
-    if (open_fd > maxfd) {
-      maxfd = open_fd;
+    if (device_fd > maxfd) {
+      maxfd = device_fd;
     }
-    FD_SET(open_fd, &all_inputs);
+    FD_SET(device_fd, &all_inputs);
   }
   globfree(&glob_result);
 
