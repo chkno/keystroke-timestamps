@@ -13,8 +13,10 @@ int main (int argc, char **argv)
 {
   int print_usec = 0;
   char* device = "/dev/input/by-path/*kbd*";
+  char* output = NULL;
   struct option long_options[] = {
     {"device", required_argument, 0,            'd' },
+    {"output", required_argument, 0,            'o' },
     {"usec",   no_argument,       &print_usec,  1   },
     {0,        0,                 0,            0   },
   };
@@ -25,7 +27,21 @@ int main (int argc, char **argv)
       device = optarg;
       continue;
     }
+    if (c == 'o') {
+      output = optarg;
+      continue;
+    }
     if (c != 0) exit(EX_USAGE);
+  }
+
+  FILE *output_file;
+  if (output == NULL) {
+    output_file = stdout;
+  } else {
+    output_file = fopen(output, "a");
+    if (output_file == NULL) {
+      err(EX_CANTCREAT, "Could not open output file: %s", output);
+    }
   }
 
   fd_set all_inputs;
@@ -68,11 +84,11 @@ int main (int argc, char **argv)
         }
         if (i.type == 1 && i.value == 1) {
           if (print_usec) {
-            printf("%ld.%06ld\n", i.time.tv_sec, i.time.tv_usec);
+            fprintf(output_file, "%ld.%06ld\n", i.time.tv_sec, i.time.tv_usec);
           } else {
-            printf("%ld\n", i.time.tv_sec);
+            fprintf(output_file, "%ld\n", i.time.tv_sec);
           }
-          fflush(stdout);
+          fflush(output_file);
         }
       }
     }
